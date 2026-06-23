@@ -30,3 +30,8 @@ server:
 jwt:
   secret: aivle-bookmanager-secret-key-must-be-long-enough-256bit
   expiration: 86400000
+
+aws:
+  s3:
+    bucket: ${AWS_S3_BUCKET:}
+    region: ${AWS_REGION:ap-northeast-2}
