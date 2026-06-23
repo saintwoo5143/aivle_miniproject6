@@ -20,7 +20,7 @@ phases:
       - echo "Build backend"
       - cd backend
       - chmod +x gradlew
-      - ./gradlew clean build -x test
+      - ./gradlew clean test bootJar
 
 artifacts:
   files:
