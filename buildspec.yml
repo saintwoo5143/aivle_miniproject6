@@ -1,28 +1,32 @@
-﻿version: 0.2
+version: 0.2
+
+env:
+  variables:
+    AWS_DEFAULT_REGION: us-east-1
+    AWS_ACCOUNT_ID: "416225317325"
+    FRONTEND_REPOSITORY_NAME: aivle-miniproject6-frontend
+    BACKEND_REPOSITORY_NAME: aivle-miniproject6-backend
+    IMAGE_TAG: latest
 
 phases:
-  install:
-    runtime-versions:
-      nodejs: 20
-      java: corretto17
-
   pre_build:
     commands:
-      - echo "Start CodeBuild"
+      - echo "Login to Amazon ECR"
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
 
   build:
     commands:
-      - echo "Build frontend"
-      - cd frontend
-      - npm ci
-      - npm run build
-      - cd ..
-      - echo "Build backend"
-      - cd backend
-      - chmod +x gradlew
-      - ./gradlew clean test bootJar
+      - echo "Build frontend Docker image"
+      - docker build -t $FRONTEND_REPOSITORY_NAME:$IMAGE_TAG ./frontend
+      - docker tag $FRONTEND_REPOSITORY_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$FRONTEND_REPOSITORY_NAME:$IMAGE_TAG
+      - echo "Build backend Docker image"
+      - docker build -t $BACKEND_REPOSITORY_NAME:$IMAGE_TAG ./backend
+      - docker tag $BACKEND_REPOSITORY_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$BACKEND_REPOSITORY_NAME:$IMAGE_TAG
 
-artifacts:
-  files:
-    - frontend/dist/**/*
-    - backend/build/libs/*
+  post_build:
+    commands:
+      - echo "Push frontend Docker image"
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$FRONTEND_REPOSITORY_NAME:$IMAGE_TAG
+      - echo "Push backend Docker image"
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$BACKEND_REPOSITORY_NAME:$IMAGE_TAG
+      - echo "Docker images pushed to ECR"
