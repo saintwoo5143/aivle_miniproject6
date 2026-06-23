@@ -1,0 +1,28 @@
+﻿version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+      java: corretto17
+
+  pre_build:
+    commands:
+      - echo "Start CodeBuild"
+
+  build:
+    commands:
+      - echo "Build frontend"
+      - cd frontend
+      - npm ci
+      - npm run build
+      - cd ..
+      - echo "Build backend"
+      - cd backend
+      - chmod +x gradlew
+      - ./gradlew clean test bootJar
+
+artifacts:
+  files:
+    - frontend/dist/**/*
+    - backend/build/libs/*
