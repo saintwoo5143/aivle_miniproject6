@@ -19,6 +19,11 @@ phases:
       - echo "Build frontend Docker image"
       - docker build -t $FRONTEND_REPOSITORY_NAME:$IMAGE_TAG ./frontend
       - docker tag $FRONTEND_REPOSITORY_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$FRONTEND_REPOSITORY_NAME:$IMAGE_TAG
+      - echo "Build backend jar"
+      - cd backend
+      - chmod +x gradlew
+      - ./gradlew clean bootJar -x test
+      - cd ..
       - echo "Build backend Docker image"
       - docker build -t $BACKEND_REPOSITORY_NAME:$IMAGE_TAG ./backend
       - docker tag $BACKEND_REPOSITORY_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$BACKEND_REPOSITORY_NAME:$IMAGE_TAG
