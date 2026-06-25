@@ -1,0 +1,41 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_DEFAULT_REGION: us-east-1
+    CLUSTER_NAME: user14-aivle-miniproject6-cluster
+
+phases:
+  install:
+    commands:
+      - echo "Install kubectl"
+      - curl -sSL -o kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.34.0/2025-07-01/bin/linux/amd64/kubectl
+      - chmod +x ./kubectl
+      - mv ./kubectl /usr/local/bin/kubectl
+
+  pre_build:
+    commands:
+      - echo "Configure kubectl for EKS"
+      - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name $CLUSTER_NAME
+
+  build:
+    commands:
+      - echo "Apply Kubernetes manifests"
+      - kubectl apply -f yaml/backend-pvc.yaml
+      - kubectl apply -f yaml/backend-service.yaml
+      - kubectl apply -f yaml/backend-deployment.yaml
+      - kubectl apply -f yaml/frontend-service.yaml
+      - kubectl apply -f yaml/frontend-deployment.yaml
+      - echo "Restart deployments to pull latest images"
+      - kubectl rollout restart deployment backend-deployment
+      - kubectl rollout restart deployment frontend-deployment
+
+  post_build:
+    commands:
+      - echo "Verify rollout status"
+      - kubectl rollout status deployment/backend-deployment --timeout=180s
+      - kubectl rollout status deployment/frontend-deployment --timeout=180s
+      - echo "Current pods"
+      - kubectl get pods
+      - echo "Current services"
+      - kubectl get svc
