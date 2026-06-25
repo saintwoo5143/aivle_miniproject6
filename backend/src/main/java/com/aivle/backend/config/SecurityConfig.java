@@ -33,6 +33,7 @@ public class SecurityConfig {
             .headers(headers -> headers.frameOptions(frame -> frame.disable()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/actuator/health/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/books/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/reviews/**").permitAll()
